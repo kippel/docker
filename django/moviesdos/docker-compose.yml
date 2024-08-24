@@ -1,0 +1,49 @@
+version: '3.9'
+services:
+  web:
+    build: .
+    container_name: moviesdos
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - 8000:8000
+    volumes:
+      - ./code:/code
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PUID=1000
+      - PGID=1000
+    depends_on:
+      - db
+    restart: unless-stopped
+  db:
+    image: postgres:16.4
+    container_name: postgres_bar
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/:rw
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - DATABASE_HOST=127.0.0.1
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PUID=1000
+      - PGID=1000
+    ports:
+      - 5432:5432
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=postgres
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+volumes:
+  postgres_data:
